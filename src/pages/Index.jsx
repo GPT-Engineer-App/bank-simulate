@@ -12,6 +12,9 @@ const Index = () => {
   const [accounts, setAccounts] = useState(initialAccounts);
   const [selectedAccount, setSelectedAccount] = useState("");
   const [amount, setAmount] = useState("");
+  const [transactions, setTransactions] = useState([]);
+  const [directDebits, setDirectDebits] = useState([]);
+  const [loans, setLoans] = useState([]);
   const toast = useToast();
 
   // Functions to simulate account operations
@@ -61,11 +64,54 @@ const Index = () => {
   };
 
   // Stub functions for features that would require a backend
-  const transferFunds = () => toast({ title: "Transfer simulated.", status: "info", duration: 2000, isClosable: true });
-  const setupDirectDebit = () => toast({ title: "Direct Debit simulated.", status: "info", duration: 2000, isClosable: true });
-  const applyForLoan = () => toast({ title: "Loan application simulated.", status: "info", duration: 2000, isClosable: true });
-  const calculateInterest = () => toast({ title: "Interest calculation simulated.", status: "info", duration: 2000, isClosable: true });
-  const viewAccountHistory = () => toast({ title: "Account history simulated.", status: "info", duration: 2000, isClosable: true });
+  const transferFunds = (fromId, toId, amountToTransfer) => {
+    const amountParsed = parseFloat(amountToTransfer);
+    setAccounts(
+      accounts.map((account) => {
+        if (account.id === fromId) {
+          return { ...account, balance: account.balance - amountParsed };
+        }
+        if (account.id === toId) {
+          return { ...account, balance: account.balance + amountParsed };
+        }
+        return account;
+      }),
+    );
+    setTransactions([...transactions, { fromId, toId, amount: amountParsed, date: new Date() }]);
+    toast({ title: "Transfer successful.", status: "success", duration: 2000, isClosable: true });
+  };
+
+  const setupDirectDebit = (accountId, amount) => {
+    const newDirectDebit = { accountId, amount, date: new Date() };
+    setDirectDebits([...directDebits, newDirectDebit]);
+    toast({ title: "Direct Debit setup successful.", status: "success", duration: 2000, isClosable: true });
+  };
+
+  const applyForLoan = (accountId, loanAmount) => {
+    const newLoan = { accountId, amount: loanAmount, date: new Date() };
+    setLoans([...loans, newLoan]);
+    toast({ title: "Loan application successful.", status: "success", duration: 2000, isClosable: true });
+  };
+
+  const calculateInterest = (accountId, interestRate) => {
+    setAccounts(
+      accounts.map((account) => {
+        if (account.id === accountId) {
+          const interest = account.balance * (interestRate / 100);
+          return { ...account, balance: account.balance + interest };
+        }
+        return account;
+      }),
+    );
+    toast({ title: "Interest calculation successful.", status: "success", duration: 2000, isClosable: true });
+  };
+
+  const viewAccountHistory = (accountId) => {
+    const accountTransactions = transactions.filter((transaction) => transaction.fromId === accountId || transaction.toId === accountId);
+    // This should be rendered on the page instead
+    console.log(accountTransactions);
+    toast({ title: "Viewing account history.", status: "info", duration: 2000, isClosable: true });
+  };
 
   return (
     <ChakraProvider>
